@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sân Bay</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/">Flight Management</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/sanbay">Sân Bay</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/hanghangkhong">Hãng Hàng Không</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/nhanvien">Nhân Viên</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/hanhkhach">Hành Khách</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/chuyenbay">Chuyến Bay</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/vemaybay">Vé Máy Bay</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/duongbay">Đường Bay</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        <h1>Hãng Hàng Không</h1>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Mã Hãng Hàng Không</th>
+                    <th>Tên Hãng Hàng Không</th>
+                    <th>Xuất Xứ</th>
+                    <th>Chủ Sở Hữu </th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for hanghangkhong in hanghangkhong_data %}
+                <tr>
+                <form class="update-form" data-id="{{ hanghangkhong.MaHangHangKhong }}">
+                <td>{{ hanghangkhong.MaHangHangKhong }}</td>
+                <td><input type="text" name="TenHangHangKhong" value="{{ hanghangkhong.TenHangHangKhong }}"></td>
+                <td><input type="text" name="XuatXu" value="{{ hanghangkhong.XuatXu }}"></td>
+                <td><input type = "text" name ="ChuSoHuu" value = "{{hanghangkhong.ChuSoHuu}}"></td>  
+                <td>
+                    <button type="submit">Update</button>
+                    <button type="button" class="delete-btn" data-id="{{ hanghangkhong.MaHangHangKhong }}">Delete</button>
+                </td>
+            </form>
+        </tr>
+                {% endfor %}
+            </tbody>
+            <tr>
+            <form id="add-form">
+                <td><input type="text" name="MaHangHangKhong" placeholder="MaHangHangKhong"></td>
+                <td><input type="text" name="TenHangHangKhong" placeholder="TenHangHangKhong"></td>
+                <td><input type="text" name="XuatXu" placeholder="XuatXu"></td>
+                <td><input type= "text" name = "ChuSoHuu" placeholder= "ChuSoHuu"></td>
+                <td><button type="submit">Add</button></td>
+            </form>
+        </tr>
+        </table>
+    </div>
+</body>
+</html>

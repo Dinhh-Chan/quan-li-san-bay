@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Duong Bay List</title>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Duong Bay List</h1>
+    <form id="duongBayForm">
+        <input type="text" id="SoHieu" name="SoHieu" placeholder="Số Hiệu">
+        <input type="text" id="ThongTin" name="ThongTin" placeholder="Thông Tin">
+        <input type="text" id="MaSanBay" name="MaSanBay" placeholder="Mã Sân Bay">
+        <input type="text" id="MaChuyenBay" name="MaChuyenBay" placeholder="Mã Chuyến Bay">
+        <button type="submit">Submit</button>
+    </form>
+
+    <h2>Duong Bay Records</h2>
+    <table border="1" id="duongBayTable">
+        <tr>
+            <th>Số Hiệu</th>
+            <th>Thông Tin</th>
+            <th>Mã Sân Bay</th>
+            <th>Mã Chuyến Bay</th>
+            <th>Actions</th>
+        </tr>
+    </table>
+
+    <script>
+        function loadDuongBays() {
+            $.get('/get_duong_bays', function(data) {
+                let duongBayTable = $('#duongBayTable');
+                duongBayTable.find("tr:gt(0)").remove();
+                data.forEach(function(db) {
+                    duongBayTable.append('<tr>' +
+                        '<td>' + db.SoHieu + '</td>' +
+                        '<td>' + db.ThongTin + '</td>' +
+                        '<td>' + db.MaSanBay + '</td>' +
+                        '<td>' + db.MaChuyenBay + '</td>' +
+                        '<td>' +
+                        '<button onclick="editDuongBay(\'' + db.SoHieu + '\')">Edit</button>' +
+                        '<button onclick="deleteDuongBay(\'' + db.SoHieu + '\')">Delete</button>' +
+                        '</td>' +
+                        '</tr>');
+                });
+            });
+        }
+
+        function addDuongBay(event) {
+            event.preventDefault();
+            let duongBayData = {
+                SoHieu: $('#SoHieu').val(),
+                ThongTin: $('#ThongTin').val(),
+                MaSanBay: $('#MaSanBay').val(),
+                MaChuyenBay: $('#MaChuyenBay').val()
+            };
+            $.ajax({
+                type: 'POST',
+                url: '/add_duong_bay',
+                contentType: 'application/json',
+                data: JSON.stringify(duongBayData),
+                success: function() {
+                    loadDuongBays();
+                    $('#duongBayForm')[0].reset();
+                }
+            });
+        }
+
+        function editDuongBay(soHieu) {
+            $.get('/get_duong_bays', function(data) {
+                let duongBay = data.find(db => db.SoHieu === soHieu);
+                if (duongBay) {
+                    $('#SoHieu').val(duongBay.SoHieu);
+                    $('#ThongTin').val(duongBay.ThongTin);
+                    $('#MaSanBay').val(duongBay.MaSanBay);
+                    $('#MaChuyenBay').val(duongBay.MaChuyenBay);
+
+                    $('#duongBayForm').off('submit').on('submit', function(event) {
+                        event.preventDefault();
+                        let duongBayData = {
+                            SoHieu: $('#SoHieu').val(),
+                            ThongTin: $('#ThongTin').val(),
+                            MaSanBay: $('#MaSanBay').val(),
+                            MaChuyenBay: $('#MaChuyenBay').val()
+                        };
+                        $.ajax({
+                            type: 'POST',
+                            url: '/edit_duong_bay/' + soHieu,
+                            contentType: 'application/json',
+                            data: JSON.stringify(duongBayData),
+                            success: function() {
+                                loadDuongBays();
+                                $('#duongBayForm')[0].reset();
+                                $('#duongBayForm').off('submit').on('submit', addDuongBay);
+                            }
+                        });
+                    });
+                }
+            });
+        }
+
+        function deleteDuongBay(soHieu) {
+            $.ajax({
+                type: 'POST',
+                url: '/delete_duong_bay/' + soHieu,
+                success: function() {
+                    loadDuongBays();
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            loadDuongBays();
+            $('#duongBayForm').on('submit', addDuongBay);
+        });
+    </script>
+</body>
+</html>

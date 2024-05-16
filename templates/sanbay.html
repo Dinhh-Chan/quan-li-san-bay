@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sân Bay</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.3.1.min.js"></script>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/">Flight Management</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/sanbay">Sân Bay</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/hanghangkhong">Hãng Hàng Không</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/nhanvien">Nhân Viên</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/hanhkhach">Hành Khách</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/chuyenbay">Chuyến Bay</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/vemaybay">Vé Máy Bay</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/duongbay">Đường Bay</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <div class="container mt-4">
+        <h1>Sân Bay</h1>
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Mã Sân Bay</th>
+                    <th>Tên Sân Bay</th>
+                    <th>Địa Chỉ Sân Bay</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for sanbay in sanbay_data %}
+                <tr>
+                    <form class="update-form" data-id="{{ sanbay.MaSanBay }}">
+                        <td>{{ sanbay.MaSanBay }}</td>
+                        <td><input type="text" name="TenSanBay" value="{{ sanbay.TenSanBay }}"></td>
+                        <td><input type="text" name="DiaChiSanBay" value="{{ sanbay.DiaChiSanBay }}"></td>
+                        <td>
+                            <button type="submit" class="btn btn-primary">Update</button>
+                            <button type="button" class="btn btn-danger delete-btn" data-id="{{ sanbay.MaSanBay }}">Delete</button>
+                        </td>
+                    </form>
+                </tr>
+                {% endfor %}
+            </tbody>
+            <tfoot>
+                <tr>
+                    <form id="add-form">
+                        <td><input type="text" name="MaSanBay" placeholder="MaSanBay"></td>
+                        <td><input type="text" name="TenSanBay" placeholder="TenSanBay"></td>
+                        <td><input type="text" name="DiaChiSanBay" placeholder="DiaChiSanBay"></td>
+                        <td><button type="submit" class="btn btn-success">Add</button></td>
+                    </form>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+    <script>
+        $(document).ready(function() {
+            // Update functionality
+            $('.update-form').on('submit', function(event) {
+                event.preventDefault();
+                let id = $(this).data('id');
+                let formData = $(this).serialize();
+                $.ajax({
+                    url: '/sanbay/update/' + id,
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        alert('Update successful!');
+                        location.reload();
+                    },
+                    error: function(response) {
+                        alert('Update failed. Please try again.');
+                    }
+                });
+            });
+
+            // Delete functionality
+            $('.delete-btn').on('click', function() {
+                let id = $(this).data('id');
+                if (confirm('Are you sure you want to delete this record?')) {
+                    $.ajax({
+                        url: '/sanbay/delete/' + id,
+                        type: 'DELETE',
+                        success: function(response) {
+                            alert('Delete successful!');
+                            location.reload();
+                        },
+                        error: function(response) {
+                            alert('Delete failed. Please try again.');
+                        }
+                    });
+                }
+            });
+
+            // Add functionality
+            $('#add-form').on('submit', function(event) {
+                event.preventDefault();
+                let formData = $(this).serialize();
+                $.ajax({
+                    url: '/sanbay/add',
+                    type: 'POST',
+                    data: formData,
+                    success: function(response) {
+                        alert('Add successful!');
+                        location.reload();
+                    },
+                    error: function(response) {
+                        alert('Add failed. Please try again.');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
