@@ -2,9 +2,9 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Flight Management System</title>
+    <title>SQL Executor</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
@@ -38,9 +38,57 @@
             </ul>
         </div>
     </nav>
+    <h1 class="text-center mt-4">SQL Executor</h1>
     <div class="container mt-4">
-        <h1>Welcome to the Flight Management System</h1>
-        <p>Select an option from the navbar to view details.</p>
+        <form id="sqlForm">
+            <div class="form-group">
+                <label for="sqlQuery">Write your SQL query here:</label>
+                <textarea id="sqlQuery" name="sql_query" class="form-control" rows="5" required></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary">Execute</button>
+        </form>
+        <div id="results" class="mt-4">
+            <h3>Results:</h3>
+            <div id="resultData"></div>
+        </div>
     </div>
+
+    <script>
+        $(document).ready(function() {
+            $('#sqlForm').on('submit', function(event) {
+                event.preventDefault();
+                let sqlQuery = $('#sqlQuery').val();
+                $.ajax({
+                    type: 'POST',
+                    url: '/execute_sql',
+                    data: { sql_query: sqlQuery },
+                    success: function(response) {
+                        if (response.status === 'success') {
+                            if (typeof response.data === 'string') {
+                                $('#resultData').html('<pre>' + response.data + '</pre>');
+                            } else {
+                                let table = '<table class="table table-bordered"><thead><tr>';
+                                for (let key in response.data[0]) {
+                                    table += '<th>' + key + '</th>';
+                                }
+                                table += '</tr></thead><tbody>';
+                                response.data.forEach(function(row) {
+                                    table += '<tr>';
+                                    for (let key in row) {
+                                        table += '<td>' + row[key] + '</td>';
+                                    }
+                                    table += '</tr>';
+                                });
+                                table += '</tbody></table>';
+                                $('#resultData').html(table);
+                            }
+                        } else {
+                            $('#resultData').html('<pre>Error: ' + response.message + '</pre>');
+                        }
+                    }
+                });
+            });
+        });
+    </script>
 </body>
 </html>

@@ -2,12 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <title>San Bay Management</title>
+    <title>Đường Bay Management</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
-    <h1>San Bay Management</h1>
+    <h1>Đường Bay Management</h1>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <a class="navbar-brand" href="/">Flight Management</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -41,24 +41,26 @@
     </nav>
 
     <div class="container mt-4">
-        <h2>San Bay Records</h2>
-        <table border="1" id="sanBayTable" class="table table-bordered">
+        <h2>Đường Bay Records</h2>
+        <table border="1" id="duongBayTable" class="table table-bordered">
             <thead>
                 <tr>
+                    <th>Số Hiệu</th>
+                    <th>Thông Tin</th>
                     <th>Mã Sân Bay</th>
-                    <th>Tên Sân Bay</th>
-                    <th>Địa Chỉ Sân Bay</th>
+                    <th>Mã Chuyến Bay</th>
                     <th>Actions</th>
                 </tr>
             </thead>
             <tbody></tbody>
             <tfoot>
                 <tr>
-                    <td colspan="4">
-                        <form id="sanBayForm">
+                    <td colspan="5">
+                        <form id="duongBayForm">
+                            <input type="text" id="SoHieu" name="SoHieu" placeholder="Số Hiệu">
+                            <input type="text" id="ThongTin" name="ThongTin" placeholder="Thông Tin">
                             <input type="text" id="MaSanBay" name="MaSanBay" placeholder="Mã Sân Bay">
-                            <input type="text" id="TenSanBay" name="TenSanBay" placeholder="Tên Sân Bay">
-                            <input type="text" id="DiaChiSanBay" name="DiaChiSanBay" placeholder="Địa Chỉ Sân Bay">
+                            <input type="text" id="MaChuyenBay" name="MaChuyenBay" placeholder="Mã Chuyến Bay">
                             <button type="submit" class="btn btn-primary">Submit</button>
                         </form>
                     </td>
@@ -68,68 +70,72 @@
     </div>    
 
     <script>
-        function loadSanBays() {
-            $.get('/get_sanbays', function(data) {
-                let sanBayTable = $('#sanBayTable tbody');
-                sanBayTable.empty();
-                data.forEach(function(sb) {
-                    sanBayTable.append('<tr>' +
-                        '<td>' + sb.MaSanBay + '</td>' +
-                        '<td>' + sb.TenSanBay + '</td>' +
-                        '<td>' + sb.DiaChiSanBay + '</td>' +
+        function loadDuongBays() {
+            $.get('/get_duongbays', function(data) {
+                let duongBayTable = $('#duongBayTable tbody');
+                duongBayTable.empty();
+                data.forEach(function(db) {
+                    duongBayTable.append('<tr>' +
+                        '<td>' + db.SoHieu + '</td>' +
+                        '<td>' + db.ThongTin + '</td>' +
+                        '<td>' + db.MaSanBay + '</td>' +
+                        '<td>' + db.MaChuyenBay + '</td>' +
                         '<td>' +
-                        '<button onclick="editSanBay(\'' + sb.MaSanBay + '\')" class="btn btn-primary btn-sm">Edit</button> ' +
-                        '<button onclick="deleteSanBay(\'' + sb.MaSanBay + '\')" class="btn btn-danger btn-sm">Delete</button>' +
+                        '<button onclick="editDuongBay(\'' + db.SoHieu + '\')" class="btn btn-primary btn-sm">Edit</button> ' +
+                        '<button onclick="deleteDuongBay(\'' + db.SoHieu + '\')" class="btn btn-danger btn-sm">Delete</button>' +
                         '</td>' +
                         '</tr>');
                 });
             });
         }
 
-        function addSanBay(event) {
+        function addDuongBay(event) {
             event.preventDefault();
-            let sanBayData = {
+            let duongBayData = {
+                SoHieu: $('#SoHieu').val(),
+                ThongTin: $('#ThongTin').val(),
                 MaSanBay: $('#MaSanBay').val(),
-                TenSanBay: $('#TenSanBay').val(),
-                DiaChiSanBay: $('#DiaChiSanBay').val()
+                MaChuyenBay: $('#MaChuyenBay').val()
             };
             $.ajax({
                 type: 'POST',
-                url: '/add_sanbay',
+                url: '/add_duongbay',
                 contentType: 'application/json',
-                data: JSON.stringify(sanBayData),
+                data: JSON.stringify(duongBayData),
                 success: function() {
-                    loadSanBays();
-                    $('#sanBayForm')[0].reset();
+                    loadDuongBays();
+                    $('#duongBayForm')[0].reset();
                 }
             });
         }
 
-        function editSanBay(MaSanBay) {
-            $.get('/get_sanbays', function(data) {
-                let sanBay = data.find(sb => sb.MaSanBay === MaSanBay);
-                if (sanBay) {
-                    $('#MaSanBay').val(sanBay.MaSanBay).prop('readonly', true);
-                    $('#TenSanBay').val(sanBay.TenSanBay);
-                    $('#DiaChiSanBay').val(sanBay.DiaChiSanBay);
+        function editDuongBay(SoHieu) {
+            $.get('/get_duongbays', function(data) {
+                let duongBay = data.find(db => db.SoHieu === SoHieu);
+                if (duongBay) {
+                    $('#SoHieu').val(duongBay.SoHieu).prop('readonly', true);
+                    $('#ThongTin').val(duongBay.ThongTin);
+                    $('#MaSanBay').val(duongBay.MaSanBay);
+                    $('#MaChuyenBay').val(duongBay.MaChuyenBay);
 
-                    $('#sanBayForm').off('submit').on('submit', function(event) {
+                    $('#duongBayForm').off('submit').on('submit', function(event) {
                         event.preventDefault();
-                        let sanBayData = {
+                        let duongBayData = {
+                            SoHieu: $('#SoHieu').val(),
+                            ThongTin: $('#ThongTin').val(),
                             MaSanBay: $('#MaSanBay').val(),
-                            TenSanBay: $('#TenSanBay').val(),
-                            DiaChiSanBay: $('#DiaChiSanBay').val()
+                            MaChuyenBay: $('#MaChuyenBay').val()
                         };
                         $.ajax({
                             type: 'POST',
-                            url: '/edit_sanbay/' + MaSanBay,
+                            url: '/edit_duongbay/' + SoHieu,
                             contentType: 'application/json',
-                            data: JSON.stringify(sanBayData),
+                            data: JSON.stringify(duongBayData),
                             success: function() {
-                                loadSanBays();
-                                $('#sanBayForm')[0].reset();
-                                $('#MaSanBay').prop('readonly', false);
-                                $('#sanBayForm').off('submit').on('submit', addSanBay);
+                                loadDuongBays();
+                                $('#duongBayForm')[0].reset();
+                                $('#SoHieu').prop('readonly', false);
+                                $('#duongBayForm').off('submit').on('submit', addDuongBay);
                             }
                         });
                     });
@@ -137,19 +143,19 @@
             });
         }
 
-        function deleteSanBay(MaSanBay) {
+        function deleteDuongBay(SoHieu) {
             $.ajax({
                 type: 'POST',
-                url: '/delete_sanbay/' + MaSanBay,
+                url: '/delete_duongbay/' + SoHieu,
                 success: function() {
-                    loadSanBays();
+                    loadDuongBays();
                 }
             });
         }
 
         $(document).ready(function() {
-            loadSanBays();
-            $('#sanBayForm').on('submit', addSanBay);
+            loadDuongBays();
+            $('#duongBayForm').on('submit', addDuongBay);
         });
     </script>
 </body>

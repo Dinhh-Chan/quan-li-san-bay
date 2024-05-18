@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Chuyến Bay Management</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Chuyến Bay Management</h1>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/">Flight Management</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/sanbay">Sân Bay</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/hanghangkhong">Hãng Hàng Không</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/nhanvien">Nhân Viên</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/hanhkhach">Hành Khách</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/chuyenbay">Chuyến Bay</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/vemaybay">Vé Máy Bay</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/duongbay">Đường Bay</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>Chuyến Bay Records</h2>
+        <table border="1" id="chuyenBayTable" class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Mã Chuyến Bay</th>
+                    <th>Tên Chuyến Bay</th>
+                    <th>Mã Hãng Hàng Không</th>
+                    <th>Mã Hiệu</th>
+                    <th>Điểm Đến</th>
+                    <th>Lịch Trình</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="7">
+                        <form id="chuyenBayForm">
+                            <input type="text" id="MaChuyenBay" name="MaChuyenBay" placeholder="Mã Chuyến Bay">
+                            <input type="text" id="TenChuyenBay" name="TenChuyenBay" placeholder="Tên Chuyến Bay">
+                            <input type="text" id="MaHangHangKhong" name="MaHangHangKhong" placeholder="Mã Hãng Hàng Không">
+                            <input type="text" id="MaHieu" name="MaHieu" placeholder="Mã Hiệu">
+                            <input type="text" id="DiemDen" name="DiemDen" placeholder="Điểm Đến">
+                            <input type="text" id="LichTrinh" name="LichTrinh" placeholder="Lịch Trình">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>    
+
+    <script>
+        function loadChuyenBays() {
+            $.get('/get_chuyenbays', function(data) {
+                let chuyenBayTable = $('#chuyenBayTable tbody');
+                chuyenBayTable.empty();
+                data.forEach(function(cb) {
+                    chuyenBayTable.append('<tr>' +
+                        '<td>' + cb.MaChuyenBay + '</td>' +
+                        '<td>' + cb.TenChuyenBay + '</td>' +
+                        '<td>' + cb.MaHangHangKhong + '</td>' +
+                        '<td>' + cb.MaHieu + '</td>' +
+                        '<td>' + cb.DiemDen + '</td>' +
+                        '<td>' + cb.LichTrinh + '</td>' +
+                        '<td>' +
+                        '<button onclick="editChuyenBay(\'' + cb.MaChuyenBay + '\')" class="btn btn-primary btn-sm">Edit</button> ' +
+                        '<button onclick="deleteChuyenBay(\'' + cb.MaChuyenBay + '\')" class="btn btn-danger btn-sm">Delete</button>' +
+                        '</td>' +
+                        '</tr>');
+                });
+            });
+        }
+
+        function addChuyenBay(event) {
+            event.preventDefault();
+            let chuyenBayData = {
+                MaChuyenBay: $('#MaChuyenBay').val(),
+                TenChuyenBay: $('#TenChuyenBay').val(),
+                MaHangHangKhong: $('#MaHangHangKhong').val(),
+                MaHieu: $('#MaHieu').val(),
+                DiemDen: $('#DiemDen').val(),
+                LichTrinh: $('#LichTrinh').val()
+            };
+            $.ajax({
+                type: 'POST',
+                url: '/add_chuyenbay',
+                contentType: 'application/json',
+                data: JSON.stringify(chuyenBayData),
+                success: function() {
+                    loadChuyenBays();
+                    $('#chuyenBayForm')[0].reset();
+                }
+            });
+        }
+
+        function editChuyenBay(MaChuyenBay) {
+            $.get('/get_chuyenbays', function(data) {
+                let chuyenBay = data.find(cb => cb.MaChuyenBay === MaChuyenBay);
+                if (chuyenBay) {
+                    $('#MaChuyenBay').val(chuyenBay.MaChuyenBay).prop('readonly', true);
+                    $('#TenChuyenBay').val(chuyenBay.TenChuyenBay);
+                    $('#MaHangHangKhong').val(chuyenBay.MaHangHangKhong);
+                    $('#MaHieu').val(chuyenBay.MaHieu);
+                    $('#DiemDen').val(chuyenBay.DiemDen);
+                    $('#LichTrinh').val(chuyenBay.LichTrinh);
+
+                    $('#chuyenBayForm').off('submit').on('submit', function(event) {
+                        event.preventDefault();
+                        let chuyenBayData = {
+                            MaChuyenBay: $('#MaChuyenBay').val(),
+                            TenChuyenBay: $('#TenChuyenBay').val(),
+                            MaHangHangKhong: $('#MaHangHangKhong').val(),
+                            MaHieu: $('#MaHieu').val(),
+                            DiemDen: $('#DiemDen').val(),
+                            LichTrinh: $('#LichTrinh').val()
+                        };
+                        $.ajax({
+                            type: 'POST',
+                            url: '/edit_chuyenbay/' + MaChuyenBay,
+                            contentType: 'application/json',
+                            data: JSON.stringify(chuyenBayData),
+                            success: function() {
+                                loadChuyenBays();
+                                $('#chuyenBayForm')[0].reset();
+                                $('#MaChuyenBay').prop('readonly', false);
+                                $('#chuyenBayForm').off('submit').on('submit', addChuyenBay);
+                            }
+                        });
+                    });
+                }
+            });
+        }
+
+        function deleteChuyenBay(MaChuyenBay) {
+            $.ajax({
+                type: 'POST',
+                url: '/delete_chuyenbay/' + MaChuyenBay,
+                success: function() {
+                    loadChuyenBays();
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            loadChuyenBays();
+            $('#chuyenBayForm').on('submit', addChuyenBay);
+        });
+    </script>
+</body>
+</html>

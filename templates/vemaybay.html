@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Vé Máy Bay Management</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Vé Máy Bay Management</h1>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/">Flight Management</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/sanbay">Sân Bay</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/hanghangkhong">Hãng Hàng Không</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/nhanvien">Nhân Viên</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/hanhkhach">Hành Khách</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/chuyenbay">Chuyến Bay</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/vemaybay">Vé Máy Bay</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/duongbay">Đường Bay</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>Vé Máy Bay Records</h2>
+        <table border="1" id="veMayBayTable" class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Mã Vé</th>
+                    <th>Mã Hành Khách</th>
+                    <th>Mã Chuyến Bay</th>
+                    <th>Loại Vé</th>
+                    <th>Giá Vé</th>
+                    <th>Chỗ Ngồi</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="7">
+                        <form id="veMayBayForm">
+                            <input type="text" id="MaVe" name="MaVe" placeholder="Mã Vé">
+                            <input type="text" id="MaHanhKhach" name="MaHanhKhach" placeholder="Mã Hành Khách">
+                            <input type="text" id="MaChuyenBay" name="MaChuyenBay" placeholder="Mã Chuyến Bay">
+                            <input type="text" id="LoaiVe" name="LoaiVe" placeholder="Loại Vé">
+                            <input type="text" id="GiaVe" name="GiaVe" placeholder="Giá Vé">
+                            <input type="text" id="ChoNgoi" name="ChoNgoi" placeholder="Chỗ Ngồi">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>    
+
+    <script>
+        function loadVeMayBays() {
+            $.get('/get_vemaybays', function(data) {
+                let veMayBayTable = $('#veMayBayTable tbody');
+                veMayBayTable.empty();
+                data.forEach(function(ve) {
+                    veMayBayTable.append('<tr>' +
+                        '<td>' + ve.MaVe + '</td>' +
+                        '<td>' + ve.MaHanhKhach + '</td>' +
+                        '<td>' + ve.MaChuyenBay + '</td>' +
+                        '<td>' + ve.LoaiVe + '</td>' +
+                        '<td>' + ve.GiaVe + '</td>' +
+                        '<td>' + ve.ChoNgoi + '</td>' +
+                        '<td>' +
+                        '<button onclick="editVeMayBay(\'' + ve.MaVe + '\')" class="btn btn-primary btn-sm">Edit</button> ' +
+                        '<button onclick="deleteVeMayBay(\'' + ve.MaVe + '\')" class="btn btn-danger btn-sm">Delete</button>' +
+                        '</td>' +
+                        '</tr>');
+                });
+            });
+        }
+
+        function addVeMayBay(event) {
+            event.preventDefault();
+            let veMayBayData = {
+                MaVe: $('#MaVe').val(),
+                MaHanhKhach: $('#MaHanhKhach').val(),
+                MaChuyenBay: $('#MaChuyenBay').val(),
+                LoaiVe: $('#LoaiVe').val(),
+                GiaVe: $('#GiaVe').val(),
+                ChoNgoi: $('#ChoNgoi').val()
+            };
+            $.ajax({
+                type: 'POST',
+                url: '/add_vemaybay',
+                contentType: 'application/json',
+                data: JSON.stringify(veMayBayData),
+                success: function() {
+                    loadVeMayBays();
+                    $('#veMayBayForm')[0].reset();
+                }
+            });
+        }
+
+        function editVeMayBay(MaVe) {
+            $.get('/get_vemaybays', function(data) {
+                let veMayBay = data.find(ve => ve.MaVe === MaVe);
+                if (veMayBay) {
+                    $('#MaVe').val(veMayBay.MaVe).prop('readonly', true);
+                    $('#MaHanhKhach').val(veMayBay.MaHanhKhach);
+                    $('#MaChuyenBay').val(veMayBay.MaChuyenBay);
+                    $('#LoaiVe').val(veMayBay.LoaiVe);
+                    $('#GiaVe').val(veMayBay.GiaVe);
+                    $('#ChoNgoi').val(veMayBay.ChoNgoi);
+
+                    $('#veMayBayForm').off('submit').on('submit', function(event) {
+                        event.preventDefault();
+                        let veMayBayData = {
+                            MaVe: $('#MaVe').val(),
+                            MaHanhKhach: $('#MaHanhKhach').val(),
+                            MaChuyenBay: $('#MaChuyenBay').val(),
+                            LoaiVe: $('#LoaiVe').val(),
+                            GiaVe: $('#GiaVe').val(),
+                            ChoNgoi: $('#ChoNgoi').val()
+                        };
+                        $.ajax({
+                            type: 'POST',
+                            url: '/edit_vemaybay/' + MaVe,
+                            contentType: 'application/json',
+                            data: JSON.stringify(veMayBayData),
+                            success: function() {
+                                loadVeMayBays();
+                                $('#veMayBayForm')[0].reset();
+                                $('#MaVe').prop('readonly', false);
+                                $('#veMayBayForm').off('submit').on('submit', addVeMayBay);
+                            }
+                        });
+                    });
+                }
+            });
+        }
+
+        function deleteVeMayBay(MaVe) {
+            $.ajax({
+                type: 'POST',
+                url: '/delete_vemaybay/' + MaVe,
+                success: function() {
+                    loadVeMayBays();
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            loadVeMayBays();
+            $('#veMayBayForm').on('submit', addVeMayBay);
+        });
+    </script>
+</body>
+</html>

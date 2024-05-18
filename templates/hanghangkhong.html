@@ -2,11 +2,12 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sân Bay</title>
+    <title>Hang Hang Khong Management</title>
     <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 </head>
 <body>
+    <h1>Hang Hang Khong Management</h1>
     <nav class="navbar navbar-expand-lg navbar-light bg-light">
         <a class="navbar-brand" href="/">Flight Management</a>
         <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
@@ -38,43 +39,124 @@
             </ul>
         </div>
     </nav>
+
     <div class="container mt-4">
-        <h1>Hãng Hàng Không</h1>
-        <table class="table table-bordered">
+        <h2>Hang Hang Khong Records</h2>
+        <table border="1" id="hangHangKhongTable" class="table table-bordered">
             <thead>
                 <tr>
                     <th>Mã Hãng Hàng Không</th>
                     <th>Tên Hãng Hàng Không</th>
                     <th>Xuất Xứ</th>
-                    <th>Chủ Sở Hữu </th>
+                    <th>Chủ Sở Hữu</th>
+                    <th>Actions</th>
                 </tr>
             </thead>
-            <tbody>
-                {% for hanghangkhong in hanghangkhong_data %}
+            <tbody></tbody>
+            <tfoot>
                 <tr>
-                <form class="update-form" data-id="{{ hanghangkhong.MaHangHangKhong }}">
-                <td>{{ hanghangkhong.MaHangHangKhong }}</td>
-                <td><input type="text" name="TenHangHangKhong" value="{{ hanghangkhong.TenHangHangKhong }}"></td>
-                <td><input type="text" name="XuatXu" value="{{ hanghangkhong.XuatXu }}"></td>
-                <td><input type = "text" name ="ChuSoHuu" value = "{{hanghangkhong.ChuSoHuu}}"></td>  
-                <td>
-                    <button type="submit">Update</button>
-                    <button type="button" class="delete-btn" data-id="{{ hanghangkhong.MaHangHangKhong }}">Delete</button>
-                </td>
-            </form>
-        </tr>
-                {% endfor %}
-            </tbody>
-            <tr>
-            <form id="add-form">
-                <td><input type="text" name="MaHangHangKhong" placeholder="MaHangHangKhong"></td>
-                <td><input type="text" name="TenHangHangKhong" placeholder="TenHangHangKhong"></td>
-                <td><input type="text" name="XuatXu" placeholder="XuatXu"></td>
-                <td><input type= "text" name = "ChuSoHuu" placeholder= "ChuSoHuu"></td>
-                <td><button type="submit">Add</button></td>
-            </form>
-        </tr>
+                    <td colspan="5">
+                        <form id="hangHangKhongForm">
+                            <input type="text" id="MaHangHangKhong" name="MaHangHangKhong" placeholder="Mã Hãng Hàng Không">
+                            <input type="text" id="TenHangHangKhong" name="TenHangHangKhong" placeholder="Tên Hãng Hàng Không">
+                            <input type="text" id="XuatXu" name="XuatXu" placeholder="Xuất Xứ">
+                            <input type="text" id="ChuSoHuu" name="ChuSoHuu" placeholder="Chủ Sở Hữu">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </td>
+                </tr>
+            </tfoot>
         </table>
-    </div>
+    </div>    
+
+    <script>
+        function loadHangHangKhongs() {
+            $.get('/get_hanghangkhongs', function(data) {
+                let hangHangKhongTable = $('#hangHangKhongTable tbody');
+                hangHangKhongTable.empty();
+                data.forEach(function(hhk) {
+                    hangHangKhongTable.append('<tr>' +
+                        '<td>' + hhk.MaHangHangKhong + '</td>' +
+                        '<td>' + hhk.TenHangHangKhong + '</td>' +
+                        '<td>' + hhk.XuatXu + '</td>' +
+                        '<td>' + hhk.ChuSoHuu + '</td>' +
+                        '<td>' +
+                        '<button onclick="editHangHangKhong(\'' + hhk.MaHangHangKhong + '\')" class="btn btn-primary btn-sm">Edit</button> ' +
+                        '<button onclick="deleteHangHangKhong(\'' + hhk.MaHangHangKhong + '\')" class="btn btn-danger btn-sm">Delete</button>' +
+                        '</td>' +
+                        '</tr>');
+                });
+            });
+        }
+
+        function addHangHangKhong(event) {
+            event.preventDefault();
+            let hangHangKhongData = {
+                MaHangHangKhong: $('#MaHangHangKhong').val(),
+                TenHangHangKhong: $('#TenHangHangKhong').val(),
+                XuatXu: $('#XuatXu').val(),
+                ChuSoHuu: $('#ChuSoHuu').val()
+            };
+            $.ajax({
+                type: 'POST',
+                url: '/add_hanghangkhong',
+                contentType: 'application/json',
+                data: JSON.stringify(hangHangKhongData),
+                success: function() {
+                    loadHangHangKhongs();
+                    $('#hangHangKhongForm')[0].reset();
+                }
+            });
+        }
+
+        function editHangHangKhong(MaHangHangKhong) {
+            $.get('/get_hanghangkhongs', function(data) {
+                let hangHangKhong = data.find(hhk => hhk.MaHangHangKhong === MaHangHangKhong);
+                if (hangHangKhong) {
+                    $('#MaHangHangKhong').val(hangHangKhong.MaHangHangKhong).prop('readonly', true);
+                    $('#TenHangHangKhong').val(hangHangKhong.TenHangHangKhong);
+                    $('#XuatXu').val(hangHangKhong.XuatXu);
+                    $('#ChuSoHuu').val(hangHangKhong.ChuSoHuu);
+
+                    $('#hangHangKhongForm').off('submit').on('submit', function(event) {
+                        event.preventDefault();
+                        let hangHangKhongData = {
+                            MaHangHangKhong: $('#MaHangHangKhong').val(),
+                            TenHangHangKhong: $('#TenHangHangKhong').val(),
+                            XuatXu: $('#XuatXu').val(),
+                            ChuSoHuu: $('#ChuSoHuu').val()
+                        };
+                        $.ajax({
+                            type: 'POST',
+                            url: '/edit_hanghangkhong/' + MaHangHangKhong,
+                            contentType: 'application/json',
+                            data: JSON.stringify(hangHangKhongData),
+                            success: function() {
+                                loadHangHangKhongs();
+                                $('#hangHangKhongForm')[0].reset();
+                                $('#MaHangHangKhong').prop('readonly', false);
+                                $('#hangHangKhongForm').off('submit').on('submit', addHangHangKhong);
+                            }
+                        });
+                    });
+                }
+            });
+        }
+
+        function deleteHangHangKhong(MaHangHangKhong) {
+            $.ajax({
+                type: 'POST',
+                url: '/delete_hanghangkhong/' + MaHangHangKhong,
+                success: function() {
+                    loadHangHangKhongs();
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            loadHangHangKhongs();
+            $('#hangHangKhongForm').on('submit', addHangHangKhong);
+        });
+    </script>
 </body>
 </html>

@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Hành Khách Management</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css">
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+    <h1>Hành Khách Management</h1>
+    <nav class="navbar navbar-expand-lg navbar-light bg-light">
+        <a class="navbar-brand" href="/">Flight Management</a>
+        <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbarNav">
+            <ul class="navbar-nav">
+                <li class="nav-item">
+                    <a class="nav-link" href="/sanbay">Sân Bay</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/hanghangkhong">Hãng Hàng Không</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/nhanvien">Nhân Viên</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/hanhkhach">Hành Khách</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/chuyenbay">Chuyến Bay</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/vemaybay">Vé Máy Bay</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" href="/duongbay">Đường Bay</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <div class="container mt-4">
+        <h2>Hành Khách Records</h2>
+        <table border="1" id="hanhKhachTable" class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Mã Hành Khách</th>
+                    <th>Tên</th>
+                    <th>Số Điện Thoại</th>
+                    <th>Địa Chỉ</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody></tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="5">
+                        <form id="hanhKhachForm">
+                            <input type="text" id="MaHanhKhach" name="MaHanhKhach" placeholder="Mã Hành Khách">
+                            <input type="text" id="Ten" name="Ten" placeholder="Tên">
+                            <input type="text" id="SoDienThoai" name="SoDienThoai" placeholder="Số Điện Thoại">
+                            <input type="text" id="DiaChi" name="DiaChi" placeholder="Địa Chỉ">
+                            <button type="submit" class="btn btn-primary">Submit</button>
+                        </form>
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>    
+
+    <script>
+        function loadHanhKhachs() {
+            $.get('/get_hanhkhachs', function(data) {
+                let hanhKhachTable = $('#hanhKhachTable tbody');
+                hanhKhachTable.empty();
+                data.forEach(function(hk) {
+                    hanhKhachTable.append('<tr>' +
+                        '<td>' + hk.MaHanhKhach + '</td>' +
+                        '<td>' + hk.Ten + '</td>' +
+                        '<td>' + hk.SoDienThoai + '</td>' +
+                        '<td>' + hk.DiaChi + '</td>' +
+                        '<td>' +
+                        '<button onclick="editHanhKhach(\'' + hk.MaHanhKhach + '\')" class="btn btn-primary btn-sm">Edit</button> ' +
+                        '<button onclick="deleteHanhKhach(\'' + hk.MaHanhKhach + '\')" class="btn btn-danger btn-sm">Delete</button>' +
+                        '</td>' +
+                        '</tr>');
+                });
+            });
+        }
+
+        function addHanhKhach(event) {
+            event.preventDefault();
+            let hanhKhachData = {
+                MaHanhKhach: $('#MaHanhKhach').val(),
+                Ten: $('#Ten').val(),
+                SoDienThoai: $('#SoDienThoai').val(),
+                DiaChi: $('#DiaChi').val()
+            };
+            $.ajax({
+                type: 'POST',
+                url: '/add_hanhkhach',
+                contentType: 'application/json',
+                data: JSON.stringify(hanhKhachData),
+                success: function() {
+                    loadHanhKhachs();
+                    $('#hanhKhachForm')[0].reset();
+                }
+            });
+        }
+
+        function editHanhKhach(MaHanhKhach) {
+            $.get('/get_hanhkhachs', function(data) {
+                let hanhKhach = data.find(hk => hk.MaHanhKhach === MaHanhKhach);
+                if (hanhKhach) {
+                    $('#MaHanhKhach').val(hanhKhach.MaHanhKhach).prop('readonly', true);
+                    $('#Ten').val(hanhKhach.Ten);
+                    $('#SoDienThoai').val(hanhKhach.SoDienThoai);
+                    $('#DiaChi').val(hanhKhach.DiaChi);
+
+                    $('#hanhKhachForm').off('submit').on('submit', function(event) {
+                        event.preventDefault();
+                        let hanhKhachData = {
+                            MaHanhKhach: $('#MaHanhKhach').val(),
+                            Ten: $('#Ten').val(),
+                            SoDienThoai: $('#SoDienThoai').val(),
+                            DiaChi: $('#DiaChi').val()
+                        };
+                        $.ajax({
+                            type: 'POST',
+                            url: '/edit_hanhkhach/' + MaHanhKhach,
+                            contentType: 'application/json',
+                            data: JSON.stringify(hanhKhachData),
+                            success: function() {
+                                loadHanhKhachs();
+                                $('#hanhKhachForm')[0].reset();
+                                $('#MaHanhKhach').prop('readonly', false);
+                                $('#hanhKhachForm').off('submit').on('submit', addHanhKhach);
+                            }
+                        });
+                    });
+                }
+            });
+        }
+
+        function deleteHanhKhach(MaHanhKhach) {
+            $.ajax({
+                type: 'POST',
+                url: '/delete_hanhkhach/' + MaHanhKhach,
+                success: function() {
+                    loadHanhKhachs();
+                }
+            });
+        }
+
+        $(document).ready(function() {
+            loadHanhKhachs();
+            $('#hanhKhachForm').on('submit', addHanhKhach);
+        });
+    </script>
+</body>
+</html>
